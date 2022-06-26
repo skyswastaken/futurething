@@ -1,3 +1,5 @@
+do return end
+
 local Future = shared.Future
 local GuiLibrary = Future.GuiLibrary
 

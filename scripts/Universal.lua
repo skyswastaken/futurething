@@ -1702,10 +1702,21 @@ do
     local connections = {}
     local renamedInstances = {}
     local textservice = game:GetService("TextService")
+    local namebox = {Value="Player"}
+    local others = {Enabled=false}
+    local othersnamebox = {Value="Other"}
     local function x(v) 
-        return v:gsub(lplr.Name, "Player")
+        local removed = v:gsub(lplr.Name, namebox.Value or "Player")
         :gsub(tostring(lplr.UserId), "1")
-        :gsub(lplr.DisplayName, "Player")
+        :gsub(lplr.DisplayName, namebox.Value or "Player")
+        if others.Enabled then
+            for _,plr in next, PLAYERS:GetPlayers() do 
+                removed = removed:gsub(plr.Name, othersnamebox.Value or "Other")
+                :gsub(tostring(plr.UserId), "1")
+                :gsub(plr.DisplayName, othersnamebox.Value or "Other")
+            end
+        end
+        return removed
     end
     local function replace(v) 
         if pcall(function() return v.Text end) and typeof(v.Text)=="string" then
@@ -1773,6 +1784,37 @@ do
             end
         end
     })
+    namebox = NameProtect.CreateTextbox({
+        Name = "Name",
+        Function = function(callback) 
+            if NameProtect.Enabled then
+                NameProtect.Toggle()
+                NameProtect.Toggle()
+            end
+        end,
+        Default = "Player",
+    })
+    others = NameProtect.CreateToggle({
+        Name = "Others",
+        Function = function(callback) 
+            if NameProtect.Enabled then
+                NameProtect.Toggle()
+                NameProtect.Toggle()
+            end
+            othersnamebox.Instance.Visible = callback
+        end,
+    })
+    othersnamebox = NameProtect.CreateTextbox({
+        Name = "Name",
+        Function = function(callback) 
+            if NameProtect.Enabled then
+                NameProtect.Toggle()
+                NameProtect.Toggle()
+            end
+        end,
+        Default = "Other",
+    })
+    othersnamebox.Instance.Visible = false
     StopFPSIssue = NameProtect.CreateToggle({
         Name = "StopFreeze",
         Function = function(callback) end,

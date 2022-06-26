@@ -1949,7 +1949,7 @@ GuiLibrary["CreateWindow"] = function(argstable)
             RealTextbox.TextColor3 = Color3.fromRGB(255, 255, 255)
             RealTextbox.TextSize = GuiLibrary.TextSize
             RealTextbox.TextXAlignment = Enum.TextXAlignment.Left
-
+            textboxapi.Instance = Textbox
             textboxapi["Set"] = function(value, skipfunction) 
                 local value = tostring(value)
                 textboxapi["Value"] = value

@@ -28,11 +28,6 @@ local ViewModel = {Enabled = false}
 local oldisnetworkowner = isnetworkowner
 local isnetworkowner = isnetworkowner or function() return true end
 local printtable = printtable or print
-local speedsettings = {
-    factor = 5.37,  
-    velocitydivfactor = 2.9,
-    wsvalue = 22.5
-}
 local whitelisted = {}
 local storedshahashes = {}
 pcall(function()
@@ -574,7 +569,7 @@ end
 
 local function getBeds() 
     local t = {}
-    for i,v in next, WORKSPACE:WaitForChild("Map"):WaitForChild("Blocks"):GetChildren() do 
+    for i,v in next, COLLECTION:GetTagged("bed") do 
         if v.Name == "bed" then
             t[#t+1] = v
         end
@@ -987,11 +982,11 @@ do
         Function = function(value) end,
         List = AuraAnimations
     })
-    --[[InstantKill = Aura.CreateToggle({
+    --[===[InstantKill = Aura.CreateToggle({
         Name = "InstantKill",
         Function = function(value) end,
         Default = true, --:troll:
-    })]]
+    })]===]
 end
 
 do 
@@ -1717,6 +1712,7 @@ do
     local speedmode = {["Enabled"] = false}
     local speed = {["Enabled"] = false}
     local hop = {Enabled = false}
+    local hopattack = {Enabled = false}
     speed = GuiLibrary.Objects.MovementWindow.API.CreateOptionsButton({
         ["Name"] = "Speed",
         ["ArrayText"] = function() return speedval["Value"] end,
@@ -1725,15 +1721,17 @@ do
                 local i = 0
                 BindToHeartbeat("Speed", function(dt)
                     if isAlive() and not stopSpeed then
-                        local velo = lplr.Character.Humanoid.MoveDirection * (speedval["Value"] - lplr.Character.Humanoid.WalkSpeed) * dt
+                        local velo = lplr.Character.Humanoid.MoveDirection * ( (speedval["Value"] + ((currentTarget and 4) or 0) ) - lplr.Character.Humanoid.WalkSpeed) * dt
                         velo = Vector3.new(velo.x, 0, velo.z)
                         lplr.Character:TranslateBy(velo)
 
-                        if hop.Enabled then 
+                        if hop.Enabled and (currentTarget or not hopattack.Enabled) then 
                             if lplr.Character.Humanoid:GetState() == Enum.HumanoidStateType.Running and lplr.Character.Humanoid.MoveDirection ~= Vector3.new() then 
                                 lplr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                             end
                         end
+
+                        
 
                         --local velo2 = (lplr.Character.Humanoid.MoveDirection * speedval["Value"]) / speedsettings.velocitydivfactor
                         --lplr.Character.HumanoidRootPart.Velocity = Vector3.new(velo2.X, lplr.Character.HumanoidRootPart.Velocity.Y, velo2.Z)
@@ -1755,12 +1753,19 @@ do
         ["Default"] = 41.5,
         ["Round"] = 1,
         ["Function"] = function() end,
-	    RealMax = 47
+	    RealMax = 100
     })
     hop = speed.CreateToggle({
         Name = "Hop",
+        Function = function(callback) 
+            hopattack.Instance.Visible = callback
+        end,
+    })
+    hopattack = speed.CreateToggle({
+        Name = "HopTargetCheck",
         Function = function() end,
     })
+    hopattack.Instance.Visible = hop.Enabled
 end
 
 
@@ -2024,10 +2029,7 @@ do
         ["Function"] = function(callback) 
             if callback then 
                 spawn(function()
-                    local connection2 = WORKSPACE:WaitForChild("Map"):WaitForChild("Blocks").ChildRemoved:Connect(function(v) 
-                        if v.Name ~= "bed" then 
-                            return nil
-                        end
+                    local connection2 = COLLECTION:GetInstanceRemovedSignal("bed"):Connect(function(v) 
                         refresh(true)
                     end)
                     for i,v in next, getBeds() do 
@@ -2093,7 +2095,7 @@ do
         ["Function"] = function(callback) 
             if callback then 
                 spawn(function()
-                    local connection2 = WORKSPACE:WaitForChild("Map"):WaitForChild("Blocks").ChildRemoved:Connect(function(v) 
+                    local connection2 = COLLECTION:GetInstanceRemovedSignal("bed"):Connect(function(v) 
                         if v.Name ~= "bed" then 
                             return nil
                         end

@@ -3,7 +3,7 @@ print("[Future] Loading!")
 repeat task.wait() until game:IsLoaded()
 if shared.Future~=nil then print("[Future] Detected future already executed, not executing!") return end
 shared.futureStartTime = game:GetService("Workspace"):GetServerTimeNow()
-shared._FUTUREVERSION = "1.1.7a | "..((shared.FutureDeveloper and "dev" or "release")).." build" -- // This is a cool thing yes
+shared._FUTUREVERSION = "1.1.7a2 | "..((shared.FutureDeveloper and "dev" or "release")).." build" -- // This is a cool thing yes
 shared._FUTUREMOTD = "futureclient.xyz 🔥"
 local startTime = shared.futureStartTime
 shared.Future = {}
@@ -12,6 +12,8 @@ local UIS = game:GetService("UserInputService")
 local TS = game:GetService("TweenService")
 local HTTPSERVICE = game:GetService("HttpService")
 local PLAYERS = game:GetService("Players")
+local CONTENTPROVIDER = game:GetService("ContentProvider")
+local COREGUI = game:GetService("CoreGui")
 local lplr = PLAYERS.LocalPlayer
 local requestfunc = syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request
 local queueteleport = syn and syn.queue_on_teleport or queue_on_teleport or fluxus and fluxus.queue_on_teleport
@@ -41,6 +43,67 @@ local function requesturl(url, bypass)
 end 
 
 --shared.Future.entity = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/entityHandler.lua"))()
+
+-- AntiPreloadAsync:
+local suc, err = pcall(function()
+    if not shared.AntiPreloadAsync then
+        shared.AntiPreloadAsync = true
+        local oldnamecall, oldPreloadAsync; do 
+            oldnamecall = hookmetamethod(game, "__namecall", function(self, tab, ...) 
+                local namecallmethod = string.lower(getnamecallmethod())
+                
+                if self ~= CONTENTPROVIDER then 
+                    return oldnamecall(self, tab, ...)
+                end
+
+                if not ((namecallmethod == 'preload' or namecallmethod == 'preloadasync') and (type(tab)=='table' and table.find(tab, COREGUI))) then 
+                    return oldnamecall(self, tab, ...)
+                end
+                
+                local returnTable = {}
+                for i,v in next, tab do 
+                    local assets; CONTENTPROVIDER.PreloadAsync(CONTENTPROVIDER, {v}, function(a) assets=a end)
+                    repeat task.wait() until assets
+                    if v == COREGUI then 
+                        for i2,v2 in next, assets do 
+                            if v2:match("rbxassetid://") then 
+                                assets[i2] = "rbxasset://textures/ui/Vehicle/SpeedBar.png"
+                            end    
+                        end
+                    end
+                    returnTable[#returnTable+1] = unpack(assets)
+                end
+                
+                return oldnamecall(self, tab, ...)
+            end)
+
+            oldPreloadAsync = hookfunction(CONTENTPROVIDER.PreloadAsync, function(tab) 
+                if not (type(tab)=='table' and table.find(tab, COREGUI)) then 
+                    return
+                end
+                
+                local returnTable = {}
+                for i,v in next, tab do 
+                    local assets; oldPreloadAsync(CONTENTPROVIDER, {v}, function(a) assets=a end)
+                    if v == COREGUI then 
+                        for i2,v2 in next, assets do 
+                            if v2:match("rbxassetid://") then 
+                                assets[i2] = "rbxasset://textures/ui/Vehicle/SpeedBar.png"
+                            end    
+                        end
+                    end
+                    returnTable[#returnTable+1] = unpack(assets)
+                end
+
+                return returnTable
+            end)    
+        end
+    end
+end)
+
+if not suc then 
+    warn("[Future] AntiPreloadAsync failed to load: "..err)
+end
 
 if game:GetService("CoreGui"):FindFirstChild("RobloxVRGui") then 
     game:GetService("CoreGui"):FindFirstChild("RobloxVRGui"):Destroy()

@@ -854,6 +854,23 @@ do
             TweenTo = {CFrame = CFrame.new(0.69, -0.7, 0.6) * CFrame.Angles(math.rad(295), math.rad(55), math.rad(290)), Time = 0.2}
 		},
 
+        Roll = {
+            Animation = {
+                {CFrame = CFrame.new(0.69, -0.7, 0.6) * CFrame.Angles(math.rad(295), math.rad(55), math.rad(290)), Time = 0.2},
+                {CFrame = CFrame.new(0.69, -0.71, 0.6) * CFrame.Angles(math.rad(295), math.rad(60), math.rad(100)), Time = 0.2}
+            },  
+            TweenTo = {CFrame = CFrame.new(0.69, -0.7, 0.6) * CFrame.Angles(math.rad(295), math.rad(55), math.rad(290)), Time = 0.2}
+        },
+
+        
+        Shrink = {
+            Animation = {
+                {CFrame =  CFrame.new(0.69, -0.71, 0.6) * CFrame.Angles(math.rad(360), math.rad(360), math.rad(360)), Time = 0.2},
+                {CFrame =  CFrame.new(0.69, -0.71, 0.6), Time = 0.2},
+            },  
+            TweenTo = {CFrame =  CFrame.new(0.69, -0.71, 0.6), Time = 0.2},
+        }
+
     }
 
     local AuraAnimations = {}

@@ -1281,7 +1281,7 @@ GuiLibrary["LoadConfig"] = function(name)
             for i,v in next, config do 
                 if GuiLibrary["Objects"][i] then 
                     local API = GuiLibrary["Objects"][i]["API"]
-                    local start = WORKSPACE:GetServerTimeNow()
+                    local start_time = WORKSPACE:GetServerTimeNow()
                     if v.Type == "OptionsButton" and GuiLibrary["Objects"][i].Window == v.Window and not table.find(exclusionList, i) then 
                         if v.Enabled then
                             --print("LoadConfig", "Loading "..i.." as ".. tostring(v.Enabled))
@@ -1299,9 +1299,9 @@ GuiLibrary["LoadConfig"] = function(name)
                             API.Toggle(v.Enabled, true)
                         end
                     end
-                    local time_ = WORKSPACE:GetServerTimeNow() - start
-                    if time_ > 0.01 then
-                        print("Loaded", i,"as", (v.Enabled~=nil and v.Enabled or v.Value), "in", time_)
+                    local time_diff = WORKSPACE:GetServerTimeNow() - start_time
+                    if time_diff > 0.01 then
+                        print("Loaded", i,"as", (v.Enabled~=nil and v.Enabled or v.Value), "in", time_diff)
                     end
                 end
             end

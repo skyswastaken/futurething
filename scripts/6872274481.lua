@@ -982,7 +982,6 @@ do
                 tweenedTo = false
                 isAuraTweening = false
                 currentTarget = nil
-
             end
         end,
     })

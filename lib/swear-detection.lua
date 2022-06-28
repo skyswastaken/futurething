@@ -1,6 +1,7 @@
 -- swear-detection.lua
 
 -- a simple function to detect if a given string contains any blacklsited words, and returns the first one found.
+-- made for bedwars roblox scripts' autoreport, but can also be used for other purposes.
 -- by engo#0320 on discord.
 
 
@@ -76,8 +77,19 @@ local DETECTIONS = {
         "report",
         "ez",
         "heck",
+        "wizard",
+        "wizord",
+        "wiza",
+        "wizo",
+        "mod",
+        "moderator",
+        "ac",
+        "developer",
+        "dev",
+        
     },
     ["Cheating/Exploiting"] = {
+        "anticheat",
         "hack",
         "hac",
         "hax",
@@ -110,7 +122,8 @@ local DETECTIONS = {
         "h a c k",
         "ha ck",
         "h a k",
-        "heck"
+        "heck",
+        "nova6", -- hehehehaw,
     },
     ["Scamming"] = {
         "sell",

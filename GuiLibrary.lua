@@ -20,7 +20,7 @@ local betterisfile = function(file)
 end
 local chatchildaddedconnection
 local GuiLibrary = {
-    ["getRobloxAsset"] = function(path) 
+    getRobloxAsset = function(path) 
         local name = path:split("/")[#path:split("/")]
         if name == "arrow.png" then
             return "rbxassetid://8904422926" 
@@ -30,79 +30,79 @@ local GuiLibrary = {
             return "rbxassetid://535716488"
         end
     end,
-    ["ColorTheme"] = {["H"] = 1, ["S"] = 1, ["V"] = 0.7}, 
-    ["Objects"] = {}, 
-    ["Signals"] = {}, 
-    ["Rainbow"] = false,
-    ["RainbowSpeed"] = 10,
-    ["WindowX"] = 40,
-    ["Connections"] = {},
-    ["ClickSounds"] = true,
-    ["GuiKeybind"] = "RightShift",
-    ["CurrentConfig"] = "default",
-    ["AllowNotifications"] = true,
-    ["HUDEnabled"] = true,
-    ["CurrentToast"] = nil,
-    ["ArrayList"] = false,
-    ["ListBackground"] = false,
-    ["ListLines"] = false,
-    ["DrawWatermark"] = false,
-    ["WatermarkBackground"] = false,
-    ["WatermarkLine"] = false,
-    ["Rendering"] = "Up",
-    ["DrawCoords"] = false,
-    ["DrawSpeed"] = false,
-    ["DrawFPS"] = false,
-    ["DrawPing"] = false,
-    ["TargetHUDEnabled"] = false,
-    ["Font"] = Enum.Font.GothamSemibold,
-    ["TextSize"] = 19.000,
-    ["TargetHUD"] = {
-        ["Position"] = {
-            ["X"] = {
-                ["Scale"] = 0,
-                ["Offset"] = 0,
+    ColorTheme = {["H"] = 1, ["S"] = 1, ["V"] = 0.7}, 
+    Objects = {}, 
+    Signals = {}, 
+    Rainbow = false,
+    RainbowSpeed = 10,
+    WindowX = 40,
+    Connections = {},
+    ClickSounds = true,
+    GuiKeybind = "RightShift",
+    CurrentConfig = "default",
+    AllowNotifications = true,
+    HUDEnabled = true,
+    CurrentToast = nil,
+    ArrayList = false,
+    ListBackground = false,
+    ListLines = false,
+    DrawWatermark = false,
+    WatermarkBackground = false,
+    WatermarkLine = false,
+    Rendering = "Up",
+    DrawCoords = false,
+    DrawSpeed = false,
+    DrawFPS = false,
+    DrawPing = false,
+    TargetHUDEnabled = false,
+    Font = Enum.Font.GothamSemibold,
+    TextSize = 19.000,
+    TargetHUD = {
+        Position = {
+            X = {
+                Scale = 0,
+                Offset = 0,
             },
-            ["Y"] = {
-                ["Scale"] = 0,
-                ["Offset"] = 0,
-            },
-        },
-    },
-    ["ArrayListInfo"] = {
-        ["Position"] = {
-            ["X"] = {
-                ["Scale"] = 0,
-                ["Offset"] = 0,
-            },
-            ["Y"] = {
-                ["Scale"] = 0,
-                ["Offset"] = 0,
+            Y = {
+                Scale = 0,
+                Offset = 0,
             },
         },
     },
-    ["HUDElements"] = {
-        ["Position"] = {
-            ["X"] = {
-                ["Scale"] = 0,
-                ["Offset"] = 0,
+    ArrayListInfo = {
+        Position = {
+            X = {
+                Scale = 0,
+                Offset = 0,
             },
-            ["Y"] = {
-                ["Scale"] = 0,
-                ["Offset"] = 0,
+            Y = {
+                Scale = 0,
+                Offset = 0,
+            },
+        },
+    },
+    HUDElements = {
+        Position = {
+            X = {
+                Scale = 0,
+                Offset = 0,
+            },
+            Y = {
+                Scale = 0,
+                Offset = 0,
             },
         },
     },
 }
-local getcustomasset = --[[getsynasset or getcustomasset or]] GuiLibrary["getRobloxAsset"]
+local getcustomasset = --[[getsynasset or getcustomasset or]] GuiLibrary.getRobloxAsset
 local exclusionList = {
     "ConfigOptionsButton", "DestructOptionsButton", "HUDOptionsButton", 
     "ClickGuiOptionsButton", "ColorsOptionsButton", "DiscordOptionsButton",
-     "HUDOptionsButtonNotificationsToggle", "ColorsOptionsButtonRainbowToggle", "ClickGuiOptionsButtonClickSoundsToggle",
-     "HUDOptionsButtonArrayListToggle", "HUDOptionsButtonListBackgroundToggle", "HUDOptionsButtonListLinesToggle", "HUDOptionsButtonWatermarkToggle",
-     "HUDOptionsButtonWMLineToggle", "HUDOptionsButtonWMBackgroundToggle", "HUDOptionsButtonRenderingSelector",
-     "HUDOptionsButtonFPSToggle", "HUDOptionsButtonSpeedToggle", "HUDOptionsButtonCoordsToggle", "HUDOptionsButtonPingToggle", "HUDOptionsButtonTargetHUDToggle",
-     "RestartOptionsButton", "FontOptionsButton", "FontOptionsButtonTextSizeSlider"
+    "HUDOptionsButtonNotificationsToggle", "ColorsOptionsButtonRainbowToggle", "ClickGuiOptionsButtonClickSoundsToggle",
+    "HUDOptionsButtonArrayListToggle", "HUDOptionsButtonListBackgroundToggle", "HUDOptionsButtonListLinesToggle", "HUDOptionsButtonWatermarkToggle",
+    "HUDOptionsButtonWMLineToggle", "HUDOptionsButtonWMBackgroundToggle", "HUDOptionsButtonRenderingSelector",
+    "HUDOptionsButtonFPSToggle", "HUDOptionsButtonSpeedToggle", "HUDOptionsButtonCoordsToggle", "HUDOptionsButtonPingToggle", "HUDOptionsButtonTargetHUDToggle",
+    "RestartOptionsButton", "FontOptionsButton", "FontOptionsButtonTextSizeSlider", "ConfigOptionsButtonConfigNameTextbox"
 }
 
 local ScreenGui = Instance.new("ScreenGui", gethui and gethui() or COREGUI:FindFirstChild("RobloxGui") or COREGUI)

@@ -51,6 +51,20 @@ local shalib = loadstring(requesturl("lib/sha.lua"))()
 local savedc0 = game:GetService("ReplicatedStorage"):WaitForChild("Assets"):WaitForChild("Viewmodel"):WaitForChild("RightHand"):WaitForChild("RightWrist").C0
 local setc0
 
+local FakeRoot, RealRoot -- fake is client sided
+local AnticheatAssist = {}
+local AnticheatAssistConstants = {
+    MaxDistance = 75,
+    -- normal
+    Delay = 0.125,
+    Lerp = 0.39,
+    TPDelay = 0.1,
+    -- combat
+    CombatDelay = 0.1,
+    CombatLerp = 0.5,
+    CombatTPDelay = 0,
+}
+
 local function getasset(path)
 	if not betterisfile(path) then
 		local req = requestfunc({
@@ -888,37 +902,40 @@ do
             if callback then 
                 spawn(function() -- Begin main attack loop
                     repeat task.wait()
+                        if isAlive() then 
+                            
+                            local Root = RealRoot or lplr.Character.HumanoidRootPart
 
-                        local plrs = getAllPlrsNear(AuraDistance.Value-0.01)
-                        if #plrs == 0 then
-                            currentTarget = nil
-                        end
+                            local plrs = getAllPlrsNear(AuraDistance.Value-0.01)
+                            if #plrs == 0 then
+                                currentTarget = nil
+                            end
 
-                        for i,v in next, plrs do 
-                            if canBeTargeted(v) and not bedwars.CheckWhitelisted(v) then    
-                                currentTarget = v
-                                local weapon = getBestSword()
-                                local selfpos = lplr.Character.HumanoidRootPart.Position + (AuraDistance.Value > 14 and (lplr.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).magnitude > 14 and (CFrame.lookAt(lplr.Character.HumanoidRootPart.Position, v.Character.HumanoidRootPart.Position).lookVector * 4) or Vector3.new(0, 0, 0))
-                                local attackArgs = {
-                                    ["weapon"] = weapon~=nil and weapon.tool,
-                                    ["entityInstance"] = v.Character,
-                                    ["validate"] = {
-                                        ["raycast"] = {
-                                            ["cameraPosition"] = hashvector(cam.CFrame.p), 
-                                            ["cursorDirection"] = hashvector(Ray.new(cam.CFrame.p, v.Character.HumanoidRootPart.Position).Unit.Direction)
-                                        },
-                                        ["targetPosition"] = hashvector(v.Character.HumanoidRootPart.Position),
-                                        ["selfPosition"] = hashvector(selfpos),
-                                    }, 
-                                    ["chargedAttack"] = {["chargeRatio"] = 1},
-                                }
-                                spawn(function()
-                                    bedwars.ClientHandler:Get(bedwars["AttackRemote"]):CallServer(attackArgs)
-                                end)
-                                task.wait(0.03)
+                            for i,v in next, plrs do 
+                                if canBeTargeted(v) --[[and not bedwars.CheckWhitelisted(v)]] then    
+                                    currentTarget = v
+                                    local weapon = getBestSword()
+                                    local selfpos = Root.Position + (AuraDistance.Value > 14 and (Root.Position - v.Character.HumanoidRootPart.Position).magnitude > 14 and (CFrame.lookAt(Root.Position, v.Character.HumanoidRootPart.Position).lookVector * 4) or Vector3.new(0, 0, 0))
+                                    local attackArgs = {
+                                        ["weapon"] = weapon~=nil and weapon.tool,
+                                        ["entityInstance"] = v.Character,
+                                        ["validate"] = {
+                                            ["raycast"] = {
+                                                ["cameraPosition"] = hashvector(cam.CFrame.p), 
+                                                ["cursorDirection"] = hashvector(Ray.new(cam.CFrame.p, v.Character.HumanoidRootPart.Position).Unit.Direction)
+                                            },
+                                            ["targetPosition"] = hashvector(v.Character.HumanoidRootPart.Position),
+                                            ["selfPosition"] = hashvector(selfpos),
+                                        }, 
+                                        ["chargedAttack"] = {["chargeRatio"] = 1},
+                                    }
+                                    spawn(function()
+                                        bedwars.ClientHandler:Get(bedwars["AttackRemote"]):CallServer(attackArgs)
+                                    end)
+                                    task.wait(0.03)
+                                end
                             end
                         end
-    
                     until not Aura.Enabled
                 end)
 
@@ -1568,6 +1585,230 @@ end
 
 -- // movement window 
 
+
+-- ac assist
+
+local BodyPart = {
+    R6 = {
+        "Head",
+        "Torso",
+        "Left Arm",
+        "Right Arm",
+        "Left Leg",
+        "Right Leg",
+    }, 
+    R15 = {
+        "Head",
+        "UpperTorso",
+        "LowerTorso",
+        "LeftUpperLeg",
+        "LeftLowerLeg",
+        "LeftFoot",
+        "RightUpperLeg",
+        "RightLowerLeg",
+        "RightFoot",
+        "LeftUpperArm",
+        "LeftLowerArm",
+        "LeftHand",
+        "RightUpperArm",
+        "RightLowerArm",
+        "RightHand",
+    }
+}
+
+do 
+    local OldHipHeight
+    local AnticheatAssistLastTick = 0
+    local AnticheatAssistConnections = {}
+    local AnticheatAssistTransparent = {}
+
+    local function AnticheatAssistFunction(char) 
+        spawn(function()
+            if not isAlive() then repeat task.wait() until isAlive() end
+            if not lplr.CharacterAppearanceLoaded then repeat task.wait() until lplr.CharacterAppearanceLoaded end
+            local char = char or lplr.Character
+
+            local Humanoid = char:WaitForChild("Humanoid", 15)
+            local HumanoidRootPart = char:WaitForChild("HumanoidRootPart", 15)
+            local RigType = Humanoid.RigType
+            local BodyParts = BodyPart[RigType.Name]
+            for i,v in next, BodyParts do 
+                char:WaitForChild(v, 10)
+            end
+
+            OldHipHeight = OldHipHeight or Humanoid.HipHeight
+            Humanoid.HipHeight = OldHipHeight
+            RealRoot = HumanoidRootPart
+            char.Parent = game
+            FakeRoot = RealRoot:Clone()
+            FakeRoot.Parent = char
+            RealRoot.Parent = cam
+            FakeRoot.CFrame = RealRoot.CFrame
+            char.PrimaryPart = FakeRoot
+            char.Parent = workspace
+            RealRoot.CanCollide = true
+            RealRoot.Transparency = AnticheatAssistTransparent.Enabled and 1 or 0
+            RealRoot.Color = Color3.fromRGB(71, 236, 50)
+            RealRoot.Material = Enum.Material.Water
+
+            task.wait(0.1)
+
+            for i,v in next, char:GetDescendants() do 
+                if v:IsA("BodyVelocity") then 
+                    v:Destroy() 
+                end
+                if v:IsA("Weld") or v:IsA("Motor6D") then 
+                    if v.Part0 and v.Part0 == RealRoot then 
+                        v.Part0 = FakeRoot
+                    end
+                    if v.Part1 and v.Part1 == RealRoot then 
+                        v.Part1 = FakeRoot
+                    end
+                end
+            end
+
+            for i,v in next, RealRoot:GetDescendants() do 
+                if v:IsA("BodyVelocity") then 
+                    v:Destroy() 
+                end
+            end
+
+            BindToStepped("AnticheatAssist", function()
+                if RealRoot and FakeRoot then
+
+                    local MoveDirection = Humanoid.MoveDirection * 20
+                    local Velo = Vector3.new(MoveDirection.X, FakeRoot.Velocity.Y, MoveDirection.Z)
+                    RealRoot.Velocity = Velo
+                    RealRoot.RotVelocity = Vector3.zero
+                    RealRoot.Transparency = AnticheatAssistTransparent.Enabled and 1 or 0
+
+                    local Magnitude = (FakeRoot.Position - RealRoot.Position).Magnitude
+                    if Magnitude > AnticheatAssistConstants.MaxDistance then
+                        FakeRoot.CFrame = RealRoot.CFrame
+                    end
+
+                    local Delay = currentTarget ~= nil and AnticheatAssistConstants.CombatDelay or AnticheatAssistConstants.Delay
+                    if tick() - AnticheatAssistLastTick > Delay then 
+                        AnticheatAssistLastTick = tick()
+                        if not currentTarget then
+                            RealRoot.CFrame = RealRoot.CFrame:Lerp(FakeRoot.CFrame, AnticheatAssistConstants.Lerp)
+                            task.wait(AnticheatAssistConstants.TPDelay)
+                            RealRoot.CFrame = FakeRoot.CFrame
+                        else
+                            RealRoot.CFrame = RealRoot.CFrame:Lerp(FakeRoot.CFrame, AnticheatAssistConstants.CombatLerp)
+                            task.wait(AnticheatAssistConstants.CombatTPDelay)
+                            RealRoot.CFrame = FakeRoot.CFrame
+                        end
+                    end
+                end
+            end)
+        
+        end)
+    end
+
+    local function DisableAnticheatAssist(char) 
+        spawn(function()
+            if not isAlive() then repeat task.wait() until isAlive() end
+            local char = char or lplr.Character
+            local Humanoid = char:FindFirstChildWhichIsA("Humanoid")
+            UnbindFromStepped("AnticheatAssist")
+            pcall(function() 
+                char.Parent = game 
+            end)
+            if RealRoot and RealRoot.Parent ~= nil then
+                RealRoot.Parent = char
+                char.PrimaryPart = RealRoot
+                RealRoot.Transparency = 1
+            end
+            if char.Parent ~= nil then
+                char.Parent = workspace
+            end
+            for i,v in next, char:GetDescendants() do 
+                if v:IsA("BodyVelocity") then 
+                    v:Destroy() 
+                end
+                if v:IsA("Weld") or v:IsA("Motor6D") then 
+                    if v.Part0 and v.Part0 == FakeRoot then 
+                        v.Part0 = RealRoot
+                    end
+                    if v.Part1 and v.Part1 == FakeRoot then     
+                        v.Part1 = RealRoot
+                    end
+                end
+            end
+            if Humanoid then 
+                Humanoid.HipHeight = OldHipHeight
+            end
+            if FakeRoot then
+                FakeRoot:Destroy()
+                FakeRoot = nil
+            end
+        end)
+    end
+
+    AnticheatAssist = GuiLibrary.Objects.MovementWindow.API.CreateOptionsButton({
+        Name = "AnticheatAssist",
+        Function = function(callback) 
+            if callback then 
+
+                AnticheatAssistConnections["CharacterRemoving"] = lplr.CharacterRemoving:Connect(function(char) 
+                    DisableAnticheatAssist(char)
+                end)
+
+                AnticheatAssistConnections["CharacterAdded"] = lplr.CharacterAdded:Connect(function(char) 
+                    AnticheatAssistFunction(char)
+                end)
+
+                AnticheatAssistConnections["TeamUpdate"] = lplr:GetPropertyChangedSignal("Team"):Connect(function() 
+                    local char = lplr.Character
+                    DisableAnticheatAssist(char)
+                    AnticheatAssistFunction(char)
+                end)
+
+                if isAlive() then 
+                    AnticheatAssistFunction(lplr.Character)
+                end
+
+                GuiLibrary.Objects.SpeedOptionsButtonSpeedSlider.Set(64) -- set speed to 64
+
+            else
+                UnbindFromStepped("AnticheatAssist")
+
+                for i,v in next, AnticheatAssistConnections do 
+                    v:Disconnect()
+                    AnticheatAssistConnections[i] = nil
+                end
+
+                if isAlive() then 
+                    DisableAnticheatAssist(lplr.Character)
+                end
+            end
+        end,
+    })
+    if shared.FutureDeveloper or shared.FutureAnticheatAssistConfig then
+        for i,v in next, AnticheatAssistConstants do
+            AnticheatAssist.CreateSlider({
+                Name = i,
+                Min = 0,
+                Max = 1,
+                Default = v,
+                Function = function(val) 
+                    AnticheatAssistConstants[i] = val
+                end
+            })
+        end
+    end
+    AnticheatAssistTransparent = AnticheatAssist.CreateToggle({
+        Name = "Transparent",
+        Function = function() end
+    })
+end
+
+
+
+
+
+
 GuiLibrary.RemoveObject("HighJumpOptionsButton")
 do
     local Duration,Power = {Value = 50},{Value = 5}
@@ -1844,7 +2085,6 @@ do
                 if flydownconnection then
                     flydownconnection:Disconnect()
                 end
-                WORKSPACE.Gravity = 196.2
             end
         end
     })
@@ -1856,7 +2096,7 @@ do
     flyspeed = fly.CreateSlider({
         ["Name"] = "Speed",
         ["Min"] = 1,
-        ["Max"] = 300,
+        ["Max"] = 22.36,
         ["Function"] = function() end
     })
     verttoggle = fly.CreateToggle({
@@ -1871,7 +2111,7 @@ do
     vertspeed = fly.CreateSlider({
         ["Name"] = "VSpeed",
         ["Min"] = 1,
-        ["Max"] = 300,
+        ["Max"] = 50,
         ["Function"] = function() end
     })
     flyglide = fly.CreateSlider({
@@ -1990,7 +2230,7 @@ if oldisnetworkowner~=nil then do
             textlabel.Parent = GuiLibrary["ScreenGui"]
             local Tween = TS:Create(textlabel, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, 0, false, 0), {Position = UDim2.new(0, 0, 0, 0)})
             Tween:Play()
-            repeat task.wait() until isnetworkowner(lplr.Character.HumanoidRootPart) or not isAlive()
+            repeat task.wait() until not isAlive() or isnetworkowner(lplr.Character.HumanoidRootPart) 
             if textlabel then
                 local Tween = TS:Create(textlabel, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out, 0, false, 0), {Position = UDim2.new(0, 0, 0, -70)})
                 Tween:Play()

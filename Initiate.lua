@@ -346,6 +346,8 @@ if betterisfile("Future/configs/!SelectedConfigs/"..tostring(shared.FuturePlaceI
     GuiLibrary.CurrentConfig = readfile("Future/configs/!SelectedConfigs/"..tostring(shared.FuturePlaceId or game.PlaceId)..".txt") 
     configBox.Set(GuiLibrary.CurrentConfig, true)
     print("[Future] Detected config ",GuiLibrary.CurrentConfig," used last time!")
+else
+    print("[Future] uh idk man")
 end
 local clickGuiButton = OtherWindow.CreateOptionsButton({
     ["Name"] = "ClickGui",

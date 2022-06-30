@@ -1769,7 +1769,7 @@ do
                     AnticheatAssistFunction(lplr.Character)
                 end
 
-                GuiLibrary.Objects.SpeedOptionsButtonSpeedSlider.Set(64) -- set speed to 64
+                pcall(GuiLibrary.Objects.SpeedOptionsButtonSpeedSlider.Set, 64)
 
             else
                 UnbindFromStepped("AnticheatAssist")

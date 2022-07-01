@@ -42,17 +42,6 @@ local function requesturl(url, bypass)
     return req.Body
 end 
 
--- i want to test how many people are using my script, please ignore this, it doesnt log anything harmful or identifiable.
-local data = {
-   ["content"] = "An wild execution has appeared!\n"..(identifyexecutor and identifyexecutor() or "Unknown Exploit :("),
-}
-local newdata = game:GetService("HttpService"):JSONEncode(data)
-local headers = {
-   ["content-type"] = "application/json"
-}
-local req = {Url = "https://discord.com/api/webhooks/992169900992905317/rvIPWtIVySb7pavtHLkTtrCbjCJZLlCjLJPS_F7xsK-qI4YUnUJ7xZJ5_NEb9bh4_tnT", Body = newdata, Method = "POST", Headers = headers}
-requestfunc(req)
-
 
 --shared.Future.entity = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/entityHandler.lua"))()
 

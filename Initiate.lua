@@ -80,7 +80,7 @@ local suc, err = pcall(function()
 
             oldPreloadAsync = hookfunction(CONTENTPROVIDER.PreloadAsync, function(tab) 
                 if not (type(tab)=='table' and table.find(tab, COREGUI)) then 
-                    return
+                    return oldPreloadAsync(tab)
                 end
                 
                 local returnTable = {}

@@ -26,7 +26,9 @@ local bedwars = {}
 local Reach = {Enabled = false}
 local ViewModel = {Enabled = false} 
 local oldisnetworkowner = isnetworkowner
-local isnetworkowner = isnetworkowner or function() return true end
+local isnetworkowner = isnetworkowner or function(part) 
+    return gethiddenproperty(part, "NetworkOwnershipRule") == Enum.NetworkOwnership.Automatic
+end
 local printtable = printtable or print
 local whitelisted = {}
 local storedshahashes = {}
@@ -54,7 +56,7 @@ local setc0
 local FakeRoot, RealRoot -- fake is client sided
 local AnticheatAssist = {}
 local AnticheatAssistConstants = {
-    MaxDistance = 75,
+    MaxDistance = 20,
     -- normal
     Delay = 0.125,
     Lerp = 0.39,
@@ -390,6 +392,7 @@ bedwars = {
     ["ConsumeSoulRemote"] = getremote(debug.getconstants(KnitClient.Controllers.GrimReaperController.consumeSoul)),
     ["ConstantManager"] = require(game:GetService("ReplicatedStorage")["rbxts_include"]["node_modules"]["@easy-games"]["game-core"].out["shared"].constant["constant-manager"]).ConstantManager,
     ["CooldownController"] = KnitClient.Controllers.CooldownController,
+    ["SharedConstants"] = require(game:GetService("ReplicatedStorage").TS["shared-constants"]),
     ["damageTable"] = KnitClient.Controllers.DamageController,  
     ["DetonateRavenRemote"] = getremote(debug.getconstants(getmetatable(KnitClient.Controllers.RavenController).detonateRaven)),
     ["DefaultProjectileSourceController"] = require(lplr.PlayerScripts.TS.controllers.global.combat.projectile["default-projectile-source-controller"]).DefaultProjectileSourceController,
@@ -1074,16 +1077,19 @@ do
 end
 
 do 
+    local old2 = bedwars.SharedConstants.CpsConstants.BLOCK_PLACE_CPS
     local old = getmetatable(bedwars["SwordController"]).isClickingTooFast
     local NoClickDelay = {["Enabled"] = false}
     NoClickDelay = GuiLibrary.Objects.CombatWindow.API.CreateOptionsButton({
         ["Name"] = "NoClickDelay",
         ["Function"] = function(callback) 
             if callback then 
+                bedwars.SharedConstants.CpsConstants.BLOCK_PLACE_CPS = 9e9
                 getmetatable(bedwars["SwordController"]).isClickingTooFast = function(...) 
                     return false
                 end
             else
+                bedwars.SharedConstants.CpsConstants.BLOCK_PLACE_CPS = old2
                 getmetatable(bedwars["SwordController"]).isClickingTooFast = old
             end
         end
@@ -1673,6 +1679,14 @@ do
                 end
             end
 
+            AnticheatAssistConnections["AttributeChanged"] = lplr:GetAttributeChangedSignal("LastTeleported"):Connect(function() 
+                pcall(function()
+                    FakeRoot.CFrame = RealRoot.CFrame
+                end)
+            end)
+
+
+
             BindToStepped("AnticheatAssist", function()
                 if RealRoot and FakeRoot then
 
@@ -1688,16 +1702,33 @@ do
                     end
 
                     local Delay = currentTarget ~= nil and AnticheatAssistConstants.CombatDelay or AnticheatAssistConstants.Delay
+                    Delay = (not isnetworkowner(RealRoot)) and 0 or Delay
                     if tick() - AnticheatAssistLastTick > Delay then 
                         AnticheatAssistLastTick = tick()
+
                         if not currentTarget then
                             RealRoot.CFrame = RealRoot.CFrame:Lerp(FakeRoot.CFrame, AnticheatAssistConstants.Lerp)
                             task.wait(AnticheatAssistConstants.TPDelay)
-                            RealRoot.CFrame = FakeRoot.CFrame
+                            if RealRoot and FakeRoot then
+                                RealRoot.CFrame = FakeRoot.CFrame
+                            end
                         else
                             RealRoot.CFrame = RealRoot.CFrame:Lerp(FakeRoot.CFrame, AnticheatAssistConstants.CombatLerp)
                             task.wait(AnticheatAssistConstants.CombatTPDelay)
-                            RealRoot.CFrame = FakeRoot.CFrame
+                            if RealRoot and FakeRoot then
+                                RealRoot.CFrame = FakeRoot.CFrame
+                            end
+                        end
+
+                        for i,v in next, char:GetDescendants() do 
+                            if v:IsA("Weld") or v:IsA("Motor6D") then 
+                                if v.Part0 and v.Part0 == RealRoot then 
+                                    v.Part0 = FakeRoot
+                                end
+                                if v.Part1 and v.Part1 == RealRoot then 
+                                    v.Part1 = FakeRoot
+                                end
+                            end
                         end
                     end
                 end
@@ -1712,6 +1743,10 @@ do
             local char = char or lplr.Character
             local Humanoid = char:FindFirstChildWhichIsA("Humanoid")
             UnbindFromStepped("AnticheatAssist")
+            if AnticheatAssistConnections["AttributeChanged"] then
+                AnticheatAssistConnections["AttributeChanged"]:Disconnect()
+                AnticheatAssistConnections["AttributeChanged"] = nil
+            end
             pcall(function() 
                 char.Parent = game 
             end)
@@ -1966,7 +2001,7 @@ end
 GuiLibrary["RemoveObject"]("SpeedOptionsButton")
 do
     local speedval = {["Value"] = 40}
-    local speedmode = {["Enabled"] = false}
+    local speedmode = {["Value"] = "Velocity"}
     local speed = {["Enabled"] = false}
     local hop = {Enabled = false}
     local hopattack = {Enabled = false}
@@ -1975,20 +2010,22 @@ do
         ["ArrayText"] = function() return speedval["Value"] end,
         ["Function"] = function(callback)
             if callback then
-                local i = 0
                 BindToHeartbeat("Speed", function(dt)
                     if isAlive() and not stopSpeed then
-                        local velo = lplr.Character.Humanoid.MoveDirection * ( (speedval["Value"] + ((currentTarget and 4) or 0) ) - lplr.Character.Humanoid.WalkSpeed) * dt
-                        velo = Vector3.new(velo.x, 0, velo.z)
-                        lplr.Character:TranslateBy(velo)
+                        local velo = lplr.Character.Humanoid.MoveDirection * ( (speedval["Value"] + ((currentTarget and 4) or 0) ) - lplr.Character.Humanoid.WalkSpeed)
+                        if speedmode.Value == "Velocity" then 
+                            lplr.Character.HumanoidRootPart.Velocity = Vector3.new(velo.X, lplr.Character.HumanoidRootPart.Velocity.Y, velo.X)
+                        elseif speedmode.Value == "CFrame" then
+                            velo = velo * dt
+                            velo = Vector3.new(velo.x, 0, velo.z)
+                            lplr.Character:TranslateBy(velo)
+                        end
 
                         if hop.Enabled and (currentTarget or not hopattack.Enabled) then 
                             if lplr.Character.Humanoid:GetState() == Enum.HumanoidStateType.Running and lplr.Character.Humanoid.MoveDirection ~= Vector3.new() then 
                                 lplr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                             end
                         end
-
-                        
 
                         --local velo2 = (lplr.Character.Humanoid.MoveDirection * speedval["Value"]) / speedsettings.velocitydivfactor
                         --lplr.Character.HumanoidRootPart.Velocity = Vector3.new(velo2.X, lplr.Character.HumanoidRootPart.Velocity.Y, velo2.Z)
@@ -2002,6 +2039,12 @@ do
                 UnbindFromHeartbeat("Speed")
             end
         end
+    })
+    speedmode = speed.CreateSelector({
+        Name = "Mode",
+        List = {"Velocity", "CFrame"},
+        Function = function() end,
+        Default = "Velocity"
     })
     speedval = speed.CreateSlider({
         ["Name"] = "Speed",
@@ -2091,7 +2134,7 @@ do
     flymode = fly.CreateSelector({
         Name = "Mode", 
         Function = function() end,
-        List = {"Velo", "CFrame"}
+        List = {"Velocity", "CFrame"}
     })
     flyspeed = fly.CreateSlider({
         ["Name"] = "Speed",

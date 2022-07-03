@@ -272,7 +272,7 @@ end
 
 local function getblockitem() 
     for i5, v5 in pairs(bedwars.getInventory(lplr).items) do
-        if v5.itemType:match("wool") or v5.itemType:match("grass") or v5.itemType:match("stone_brick") or v5.itemType:match("wood_plank") or v5.itemType:match("stone") or v5.itemType:match("bedrock") then
+        if v5.itemType:match("wool") or v5.itemType:match("grass") or v5.itemType:match("stone_brick") or v5.itemType:match("wood_plank") or v5.itemType:match("stone") or v5.itemType:match("bedrock") or v5.itemType:match("tnt") then
 			return v5.itemType, v5.amount
 		end
 	end	
@@ -895,14 +895,22 @@ do
         AuraAnimations[#AuraAnimations+1] = i
     end
 
+    local AuraShowTarget = {Enabled = false}
     local InstantKill = {Enabled = false}
     local AuraDistance = {Value = 18}
     local AuraAnimation = {Value = ""}
     local Aura = {Enabled = false}
+    local TargetPart
     Aura = GuiLibrary.Objects.CombatWindow.API.CreateOptionsButton({
         Name = "Aura",
         Function = function(callback) 
             if callback then 
+                TargetPart = TargetPart or Instance.new("Part")
+                TargetPart.Color = Color3.fromRGB(200, 0, 0)
+                TargetPart.Transparency = 0.6
+                TargetPart.CanCollide = false
+                TargetPart.Anchored = true
+
                 spawn(function() -- Begin main attack loop
                     repeat task.wait()
                         if isAlive() then 
@@ -980,8 +988,15 @@ do
                                 end)
                             end
 
+                            if AuraShowTarget.Enabled then
+                                TargetPart.Parent = workspace
+                                TargetPart.CFrame = currentTarget.Character:GetPrimaryPartCFrame()
+                                TargetPart.Size = currentTarget.Character:GetExtentsSize()
+                            end
+
                         else
                             GuiLibrary["TargetHUDAPI"].clear()
+                            TargetPart.Parent = nil
                             if tweenedTo then
                                 cancelViewmodel = true
                                 tweenedTo = false
@@ -1017,6 +1032,11 @@ do
         Name = "Anim",
         Function = function(value) end,
         List = AuraAnimations
+    })
+    AuraShowTarget = Aura.CreateToggle({
+        Name = "ShowTarget",
+        Function = function(value) end,
+        Default = true,
     })
     --[===[InstantKill = Aura.CreateToggle({
         Name = "InstantKill",
@@ -1259,6 +1279,30 @@ do
         end,
     })
 end
+
+--[[
+do
+    local fastpickup = {}; fastpickup = GuiLibrary.Objects.ExploitsWindow.API.CreateOptionsButton({
+        Name = "FastPickup",
+        Function = function(callback) 
+            if callback then 
+                spawn(function() 
+                    repeat task.wait() 
+                        pcall(function()
+                            for i,v in next, lplr.Character.InventoryFolder.Value:GetChildren() do 
+                                if (v.Position - lplr.Character.HumanoidRootPart.Position).magnitude < 30 then 
+                                    bedwars.ClientHandler:Get(bedwars.PickupRemote).instance:InvokeServer({
+                                        ["itemDrop"] = v,
+                                    })
+                                end
+                            end
+                        end)
+                    until not fastpickup.Enabled
+                end)
+            end
+        end,
+    })
+end]]
 
 do 
     local effect = game:GetService("ReplicatedStorage").Assets.Effects.InfernalShields
@@ -1680,9 +1724,12 @@ do
             end
 
             AnticheatAssistConnections["AttributeChanged"] = lplr:GetAttributeChangedSignal("LastTeleported"):Connect(function() 
-                pcall(function()
-                    FakeRoot.CFrame = RealRoot.CFrame
-                end)
+                pcall(coroutine.wrap(function()
+                    for i = 1, 10 do 
+                        FakeRoot.CFrame = RealRoot.CFrame
+                        task.wait()
+                    end
+                end))
             end)
 
 
@@ -1720,6 +1767,7 @@ do
                             end
                         end
 
+                        --[[
                         for i,v in next, char:GetDescendants() do 
                             if v:IsA("Weld") or v:IsA("Motor6D") then 
                                 if v.Part0 and v.Part0 == RealRoot then 
@@ -1730,6 +1778,11 @@ do
                                 end
                             end
                         end
+
+                        if Humanoid then 
+                            Humanoid.HipHeight = OldHipHeight
+                        end]]
+
                     end
                 end
             end)
@@ -1771,12 +1824,15 @@ do
                     end
                 end
             end
-            if Humanoid then 
-                Humanoid.HipHeight = OldHipHeight
-            end
             if FakeRoot then
                 FakeRoot:Destroy()
                 FakeRoot = nil
+            end
+            if Humanoid then 
+                repeat
+                    Humanoid.HipHeight = OldHipHeight
+                    task.wait(1)
+                until Humanoid.HipHeight == OldHipHeight
             end
         end)
     end
@@ -2007,18 +2063,23 @@ do
     local hopattack = {Enabled = false}
     speed = GuiLibrary.Objects.MovementWindow.API.CreateOptionsButton({
         ["Name"] = "Speed",
-        ["ArrayText"] = function() return speedval["Value"] end,
+        ["ArrayText"] = function() return speedval["Value"].."|"..speedmode["Value"] end,
         ["Function"] = function(callback)
             if callback then
                 BindToHeartbeat("Speed", function(dt)
                     if isAlive() and not stopSpeed then
-                        local velo = lplr.Character.Humanoid.MoveDirection * ( (speedval["Value"] + ((currentTarget and 4) or 0) ) - lplr.Character.Humanoid.WalkSpeed)
-                        if speedmode.Value == "Velocity" then 
-                            lplr.Character.HumanoidRootPart.Velocity = Vector3.new(velo.X, lplr.Character.HumanoidRootPart.Velocity.Y, velo.X)
-                        elseif speedmode.Value == "CFrame" then
-                            velo = velo * dt
-                            velo = Vector3.new(velo.x, 0, velo.z)
-                            lplr.Character:TranslateBy(velo)
+                        
+                        local Factor = (speedval.Value) + (currentTarget and 4 or 0) - (((speedmode.Value == "CFrame") and lplr.Character.Humanoid.WalkSpeed) or -5) 
+                        local MoveDirection = lplr.Character.Humanoid.MoveDirection * Factor
+                        
+                        if speedmode.Value == "CFrame" then 
+                            local Move = MoveDirection * dt
+                            lplr.Character:TranslateBy( Vector3.new(Move.X, 0, Move.Z) )
+                        elseif speedmode.Value == "Velocity" then 
+                            local Move = Vector3.new(MoveDirection.X, lplr.Character.HumanoidRootPart.Velocity.Y, MoveDirection.Z) 
+                            lplr.Character.HumanoidRootPart.AssemblyLinearVelocity = Move
+                        elseif speedmode.Value == "Developer" then
+                            local Move = Vector3.new(MoveDirection.X, 0, MoveDirection.Z)
                         end
 
                         if hop.Enabled and (currentTarget or not hopattack.Enabled) then 
@@ -2187,7 +2248,7 @@ do
                             local velo = Vector3.new(0, Stepval["Value"] / 100, 0)
                             lplr.Character:TranslateBy(velo)
                             local old = lplr.Character.HumanoidRootPart.Velocity
-                            lplr.Character.HumanoidRootPart.Velocity = Vector3.new(0, velo.Y*70, 0)
+                            lplr.Character.HumanoidRootPart.Velocity = Vector3.new(old.X, velo.Y*70, old.Z)
                         end
                     end
                 end)
@@ -2246,9 +2307,9 @@ do
                 bedwars["sprintTable"]:stopSprinting()
                 UnbindFromHeartbeat("Sprint")
             end
-        end
+        end,
+        ArrayText = function() return "Legit" end
     })
-    ArrayText = function() return "Legit" end
 end
 
 -- // render window 
@@ -2601,9 +2662,10 @@ do
                             local ImageContainer
                             local ItemName
                             local raw = v.DisplayName..(tagshealth.Enabled and ' '..tostring(math.round(v.Character.Humanoid.Health)) or '')
-                            local blue = "#2a96fa"
-                            local red = "#ed4d4d"
-                            local text = '<font color="'..(Future.isFriend(v) and blue or red)..'">'..v.DisplayName..'</font>'..(tagshealth.Enabled and ' <font color="#'..(convertHealthToColor(v.Character.Humanoid.Health, v.Character.Humanoid.MaxHealth):ToHex())..'">'..tostring(math.round(v.Character.Humanoid.Health))..'</font>' or '')
+                            local blue = "2a96fa"
+                            local default = "ffffff"
+                            local teamcolor = (v.Team and v.TeamColor.Color:ToHex())
+                            local text = '<font color="#'..(Future.isFriend(v) and blue or (teamcolor or default))..'">'..v.DisplayName..'</font>'..(tagshealth.Enabled and ' <font color="#'..(convertHealthToColor(v.Character.Humanoid.Health, v.Character.Humanoid.MaxHealth):ToHex())..'">'..tostring(math.round(v.Character.Humanoid.Health))..'</font>' or '')
                             if NametagsFolder:FindFirstChild(v.Name) then 
                                 frame = NametagsFolder:FindFirstChild(v.Name)
                                 ImageContainer = frame:FindFirstChild("ItemContainer"):FindFirstChild("ImageContainer")
@@ -3393,7 +3455,7 @@ do
                         local movedir = lplr.Character:FindFirstChild("Humanoid").MoveDirection
                         if movedir.X==0 and movedir.Z==0 and lplr.Character:FindFirstChild("Humanoid").Jump==true  then 
                             local velo = lplr.Character.HumanoidRootPart.Velocity
-                            lplr.Character.HumanoidRootPart.Velocity = Vector3.new(0, 25, 0)
+                            lplr.Character.HumanoidRootPart.Velocity = Vector3.new(velo.X, 25, velo.Z)
                         end
                         if not isPointInMapOccupied(newpos) then
                             bedwars["placeBlock"](newpos, block)

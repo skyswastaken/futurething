@@ -1600,9 +1600,10 @@ do
                             local UIScale
                             local raw = v.DisplayName..(tagshealth.Enabled and ' '..tostring(math.round(v.Character.Humanoid.Health)) or '') 
                             -- blue color: rgb(89, 175, 255)
-                            local blue = "#2a96fa"
-                            local red = "#ed4d4d"
-                            local text = '<font color="'..(Future.isFriend(v) and blue or red)..'">'..v.DisplayName..'</font>'..(tagshealth.Enabled and ' <font color="#'..(convertHealthToColor(v.Character.Humanoid.Health, v.Character.Humanoid.MaxHealth):ToHex())..'">'..tostring(math.round(v.Character.Humanoid.Health))..'</font>' or '')
+                            local blue = "2a96fa"
+                            local default = "ffffff"
+                            local teamcolor = (v.Team and v.TeamColor.Color:ToHex())
+                            local text = '<font color="#'..(Future.isFriend(v) and blue or (teamcolor or default))..'">'..v.DisplayName..'</font>'..(tagshealth.Enabled and ' <font color="#'..(convertHealthToColor(v.Character.Humanoid.Health, v.Character.Humanoid.MaxHealth):ToHex())..'">'..tostring(math.round(v.Character.Humanoid.Health))..'</font>' or '')
                             if NametagsFolder:FindFirstChild(v.Name) then 
                                 frame = NametagsFolder:FindFirstChild(v.Name)
                                 local name = v.DisplayName
@@ -1739,6 +1740,7 @@ do
             end)
             return y
         end   
+        return v
     end
 
     local mt = getrawmetatable(game)
@@ -1766,7 +1768,7 @@ do
                     local args = {...}
                     local ncm = getnamecallmethod()
                     if ncm == "GetTextSize" and self == textservice then 
-                        replace(args[1])    
+                        args[1] = replace(args[1])    
                     end
                     return oldnamecall(self, table.unpack(args))
                 end)

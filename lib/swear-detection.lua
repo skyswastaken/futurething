@@ -116,7 +116,6 @@ local DETECTIONS = {
         "noboline",
         "vape",
         "vxpe",
-        "auto",
         "ha k",
         "ha c",
         "h a c k",
@@ -124,6 +123,11 @@ local DETECTIONS = {
         "h a k",
         "heck",
         "nova6", -- hehehehaw,
+        "dupe",
+        "duplication",
+        "cps",
+        "autoclicker",
+        "auto"
     },
     ["Scamming"] = {
         "sell",

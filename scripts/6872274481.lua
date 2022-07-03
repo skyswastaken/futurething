@@ -853,6 +853,27 @@ local convertHealthToColor = function(health, maxHealth)
     return Color3.fromRGB(96, 253, 48)
 end
 
+local function createAngleInc(Start, DefaultInc, Goal) 
+	local i = Start or 0
+	return function(Inc) 
+		local Inc = Inc or DefaultInc or 1
+		i = math.clamp(i + Inc, Start, Goal)
+		return i
+	end
+end
+
+local function circle(Self, Target, Radius, Delay, Speed, StopIf)
+	local AngleInc = createAngleInc(0, Speed, 360)
+	for i = 1, 360 / Speed do 
+		local Angle = AngleInc(Speed)
+		Self.CFrame = CFrame.new(Target.CFrame.p) * CFrame.Angles(0, math.rad(Angle), 0) * CFrame.new(0, 0.1, Radius)
+		task.wait(Delay)
+        if StopIf and StopIf() then
+            return
+        end
+	end
+end
+
 local cancelViewmodel = false
 local currentTarget
 local isAuraTweening = false
@@ -860,6 +881,7 @@ local isAuraTweening = false
 -- // combat window
 
 do 
+    
 
     local AuraAnimationList = {
 
@@ -895,6 +917,7 @@ do
         AuraAnimations[#AuraAnimations+1] = i
     end
 
+    local AuraStrafe = {Enabled = false}
     local AuraShowTarget = {Enabled = false}
     local InstantKill = {Enabled = false}
     local AuraDistance = {Value = 18}
@@ -938,7 +961,7 @@ do
                                             ["targetPosition"] = hashvector(v.Character.HumanoidRootPart.Position),
                                             ["selfPosition"] = hashvector(selfpos),
                                         }, 
-                                        ["chargedAttack"] = {["chargeRatio"] = 1},
+                                        ["chargedAttack"] = {["chargeRatio"] = not InstantKill.Enabled and 1 or tostring(0/0)},
                                     }
                                     spawn(function()
                                         bedwars.ClientHandler:Get(bedwars["AttackRemote"]):CallServer(attackArgs)
@@ -949,6 +972,25 @@ do
                         end
                     until not Aura.Enabled
                 end)
+
+                --[[
+                spawn(function() 
+                    repeat task.wait() 
+                        if currentTarget then 
+                            if AuraStrafe.Enabled then 
+                                circle(lplr.Character.HumanoidRootPart, currentTarget.Character.HumanoidRootPart, 5, 0.5, 2, function() 
+                                    if not Aura.Enabled or not AuraStrafe.Enabled then 
+                                        return true
+                                    end 
+                                    if not currentTarget then 
+                                        return true
+                                    end
+                                    return false
+                                end)
+                            end
+                        end
+                    until not Aura.Enabled
+                end)]]
 
                 spawn(function() -- Begin asynchronous background task loop
                     repeat task.wait()
@@ -989,9 +1031,14 @@ do
                             end
 
                             if AuraShowTarget.Enabled then
-                                TargetPart.Parent = workspace
-                                TargetPart.CFrame = currentTarget.Character:GetPrimaryPartCFrame()
-                                TargetPart.Size = currentTarget.Character:GetExtentsSize()
+                                local suc = pcall(function()
+                                    TargetPart.Parent = workspace
+                                    TargetPart.CFrame = currentTarget.Character:GetPrimaryPartCFrame()
+                                    TargetPart.Size = currentTarget.Character:GetExtentsSize()
+                                end)
+                                if not suc then 
+                                    TargetPart.Parent = nil
+                                end
                             end
 
                         else
@@ -1038,10 +1085,16 @@ do
         Function = function(value) end,
         Default = true,
     })
-    --[===[InstantKill = Aura.CreateToggle({
+    InstantKill = Aura.CreateToggle({
         Name = "InstantKill",
         Function = function(value) end,
         Default = true, --:troll:
+    })
+    --[===[
+    AuraStrafe = Aura.CreateToggle({
+        Name = "Strafe",
+        Function = function(value) end,
+        Default = false,
     })]===]
 end
 
@@ -1701,7 +1754,7 @@ do
             RealRoot.Color = Color3.fromRGB(71, 236, 50)
             RealRoot.Material = Enum.Material.Water
 
-            task.wait(0.1)
+            
 
             for i,v in next, char:GetDescendants() do 
                 if v:IsA("BodyVelocity") then 

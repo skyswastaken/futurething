@@ -961,7 +961,7 @@ do
                                             ["targetPosition"] = hashvector(v.Character.HumanoidRootPart.Position),
                                             ["selfPosition"] = hashvector(selfpos),
                                         }, 
-                                        ["chargedAttack"] = {["chargeRatio"] = not InstantKill.Enabled and 1 or tostring(0/0)},
+                                        ["chargedAttack"] = {["chargeRatio"] = 1},
                                     }
                                     spawn(function()
                                         bedwars.ClientHandler:Get(bedwars["AttackRemote"]):CallServer(attackArgs)
@@ -1085,12 +1085,12 @@ do
         Function = function(value) end,
         Default = true,
     })
+        --[===[
     InstantKill = Aura.CreateToggle({
         Name = "InstantKill",
         Function = function(value) end,
         Default = true, --:troll:
     })
-    --[===[
     AuraStrafe = Aura.CreateToggle({
         Name = "Strafe",
         Function = function(value) end,

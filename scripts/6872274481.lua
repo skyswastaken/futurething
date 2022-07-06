@@ -203,7 +203,22 @@ local function getPlrNear(max)
             local diff = (lplr.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
             if diff < nearestnum then 
                 nearestnum = diff 
-                nearestval = v
+                returning = v
+            end
+        end
+    end
+    return returning
+end
+
+local function getLowestHpPlrNear(max) 
+    local returning, lowestnum = nil, 9999999999
+    for i,v in next, PLAYERS:GetPlayers() do 
+        if isAlive(v) and v~=lplr then 
+            local diff = (lplr.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
+            local health = v.Character:GetAttribute("Health")
+            if diff < max and health < lowestnum then 
+                lowestnum = health 
+                returning = v
             end
         end
     end
@@ -940,13 +955,18 @@ do
                             
                             local Root = RealRoot or lplr.Character.HumanoidRootPart
 
-                            local plrs = getAllPlrsNear(AuraDistance.Value-0.01)
+                            --[[local plrs = getAllPlrsNear(AuraDistance.Value-0.01)
                             if #plrs == 0 then
+                                currentTarget = nil
+                            end]]
+
+                            local v = getLowestHpPlrNear(AuraDistance.Value - 0.01)
+                            if not v then 
                                 currentTarget = nil
                             end
 
-                            for i,v in next, plrs do 
-                                if canBeTargeted(v) --[[and not bedwars.CheckWhitelisted(v)]] then    
+                            --for i,v in next, plrs do 
+                                if v and canBeTargeted(v) and not bedwars.CheckWhitelisted(v) then    
                                     currentTarget = v
                                     local weapon = getBestSword()
                                     local selfpos = Root.Position + (AuraDistance.Value > 14 and (Root.Position - v.Character.HumanoidRootPart.Position).magnitude > 14 and (CFrame.lookAt(Root.Position, v.Character.HumanoidRootPart.Position).lookVector * 4) or Vector3.new(0, 0, 0))
@@ -963,12 +983,13 @@ do
                                         }, 
                                         ["chargedAttack"] = {["chargeRatio"] = 1},
                                     }
-                                    spawn(function()
-                                        bedwars.ClientHandler:Get(bedwars["AttackRemote"]):CallServer(attackArgs)
-                                    end)
-                                    task.wait(0.03)
+                                    --spawn(function()
+                                        local x = bedwars.ClientHandler:Get(bedwars["AttackRemote"]):CallServer(attackArgs)
+                                        --print("Aura attack was successful:", x)
+                                    --end)
+                                    task.wait(1 / 3) -- was 0.03
                                 end
-                            end
+                            --end
                         end
                     until not Aura.Enabled
                 end)

@@ -1,10 +1,10 @@
--- // credits to anyones code i used/looked at.
-print("[Future] Loading!")
+--// TYP any usage of this code or distribution MUST credit TYP or yza9000 this is NOT open source, thanks
+print("[Yza Client] Loading!")
 repeat task.wait() until game:IsLoaded()
-if shared.Future~=nil then print("[Future] Detected future already executed, not executing!") return end
+if shared.Future~=nil then print("[Yza Client] Detected future already executed, not executing!") return end
 shared.futureStartTime = game:GetService("Workspace"):GetServerTimeNow()
-shared._FUTUREVERSION = "1.1.7a2 | "..((shared.FutureDeveloper and "dev" or "release")).." build" -- // This is a cool thing yes
-shared._FUTUREMOTD = "futureclient.xyz 🔥"
+shared._FUTUREVERSION = "1.1.7a2 | "..((shared.FutureDeveloper and "dev" or "release")).." build" 
+shared._FUTUREMOTD = "Recontinued by yza9000"
 local startTime = shared.futureStartTime
 shared.Future = {}
 local Future = shared.Future
@@ -32,7 +32,7 @@ local function requesturl(url, bypass)
     if betterisfile(url) and shared.FutureDeveloper then 
         return readfile(url)
     end
-    local repourl = bypass and "https://raw.githubusercontent.com/joeengo/" or "https://raw.githubusercontent.com/joeengo/Future/main/"
+    local repourl = bypass and "https://raw.githubusercontent.com/skyswastaken/" or "https://raw.githubusercontent.com/skyswastaken/futurething/main/"
     local url = url:gsub("Future/", "")
     local req = requestfunc({
         Url = repourl..url,
@@ -43,12 +43,12 @@ local function requesturl(url, bypass)
 end 
 
 
---shared.Future.entity = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/entityHandler.lua"))()
+--shared.Future.entity = loadstring(game:HttpGet("https://raw.githubusercontent.com/skyswastaken/Tests/main/EntityHandler.lua"))()
 
--- anti mobile skids:
+-- anti mobile fixed by yza9000
 
 (function() 
-    local entity = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/Libraries/entityHandler.lua"))()
+    local entity = loadstring(game:HttpGet("https://raw.githubusercontent.com/skyswastaken/Tests/main/EntityHandler.lua"))()
 end)()
 
 
@@ -873,7 +873,7 @@ spawn(function()
         local textlabel = Instance.new("TextLabel")
         textlabel.Size = UDim2.new(1, 0, 0, 36)
         textlabel.RichText = true
-        textlabel.Text = [[<stroke thickness="2">Please join the Future discord server for updates and to leave feedback. discord.gg/bdjT5UmmDJ</stroke>]]
+        textlabel.Text = [[<stroke thickness="2">TYP - The Yza Project https://discord.gg/uFaDx2ymAa</stroke>]]
         textlabel.BackgroundTransparency = 1
         textlabel.TextStrokeTransparency = 0
         textlabel.TextSize = 25
@@ -884,7 +884,7 @@ spawn(function()
         local textlabel2 = Instance.new("TextLabel")
         textlabel2.Size = UDim2.new(1, 0, 0, 36)
         textlabel2.RichText = true
-        textlabel2.Text = [[<stroke thickness="2">Always use alts when exploiting.</stroke>]]
+        textlabel2.Text = [[<stroke thickness="2">Remember To use alts!</stroke>]]
         textlabel2.BackgroundTransparency = 1
         textlabel2.TextStrokeTransparency = 0
         textlabel2.TextSize = 25
@@ -912,5 +912,5 @@ spawn(function()
         GuiLibrary["SaveConfig"](GuiLibrary["CurrentConfig"], true)
     until not shared.Future
 end)
-fprint("Finished loading in "..tostring(math.floor((game:GetService("Workspace"):GetServerTimeNow() - startTime) * 1000) / 1000).."s\nPress "..GuiLibrary["GuiKeybind"].." to open the Gui.\nPlease join the discord for changelogs and to report bugs. \ndiscord.gg/bdjT5UmmDJ\nEnjoy using Future v"..shared._FUTUREVERSION.."")
+fprint("Finished loading in "..tostring(math.floor((game:GetService("Workspace"):GetServerTimeNow() - startTime) * 1000) / 1000).."s\nPress "..GuiLibrary["GuiKeybind"].." to open the Client.\nTYP - The Yza Project. \nhttps://discord.gg/uFaDx2ymAa\nEnjoy using Yza Client v"..shared._FUTUREVERSION.."")
 shared._FUTURECACHED = true

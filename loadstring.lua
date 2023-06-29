@@ -4,8 +4,8 @@ local betterisfile = function(file)
 end
 
 if not shared.FutureDeveloper and betterisfile("Future/scripts/6872274481.lua") then
-    warn("[Future] Please contact engo#0320 on discord, Error: NVLN Detection!")
-    return pcall(game.Players.LocalPlayer.Kick, game.Players.LocalPlayer, "Please contact engo#0320 on discord, Error: NVLN Detection!")
+    warn("[Yza Client]: Modifed Yza Client Detected!,  Use the Normal Yza Client File!")
+    return pcall(game.Players.LocalPlayer.Kick, game.Players.LocalPlayer, " Modified Yza Client Detected  Use The Normal Yza Client File")
 end
 
 if shared.FutureDeveloper then 
@@ -13,4 +13,4 @@ if shared.FutureDeveloper then
     return
 end
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/joeengo/Future/main/Initiate.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/skyswastaken/futurething/main/Initiate.lua"))()

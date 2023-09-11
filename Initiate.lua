@@ -1,1 +1,1 @@
-game:GetService("ReplicatedStorage"):FindFirstChild("SelfReport" true):FireServer("injection_detected)
+game:GetService("ReplicatedStorage"):FindFirstChild("SelfReport" true):FireServer("injection_detected")
